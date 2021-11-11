@@ -1,0 +1,140 @@
+Terraform is an Iac tool (infrastructure as code) that allows you build, change and versio of the infrastructure safely and cleanly
+
+Command to check the terraform version
+-------------------------------------
+terraform version
+
+
+
+Important iles in terraform:
+----------------------------
+1> Main.tf  2> Variables.tf   3>Output.tf
+
+
+Main.tf is the main file in terraform it has few sections like 
+
+>>Provider Section:::
+---------------------
+
+
+provide "aws" {
+        access_key = #${var.aws_acess_key}"
+        secret_key = "${var.aws_secret_key}"
+        region = "${vars.aws_region}"
+       }
+       
+       > If provider is aws that means we are telling that all the things to be executed in "AWS"
+       > Terraform download the necessary plugins based upn the provider type
+       
+       
+Resource section:::
+-------------------
+
+resource "aws_instance" "web" {
+              ami = 'aminxxxxxxxxxxxxxxxx'
+              instance_type = 't1.micro'
+              }
+
+Syntax:   resource "instnace type" "name of the instance" { }
+
+First item is the type of the resource we are creating and the second one is name 
+is the second one is default then we can give the name in the tags section
+
+EG:
+
+  resource "aws-instance" "default" {
+                ami = 'amixxxxxxxxxxxxxxxx'
+                instnace-type = 't2.micro"
+                 tags {
+                    Name = "${var.vpc_name}"
+                    }
+                    }
+                    
+                    
+                    
+ 
+ 
+ 
+ Variables.tf >> all the variable realted data filled in variables.tf
+ once we are ready with Main.tf and variables.tf then we can execute the below commands 
+ >> terrafrom init
+ 
+ It wil down load the required binaries for the selected provider, After this execute the below cpmmand
+ 
+ >>terraform plan
+ 
+ It will shows that what all are the thing going to be executing with this tf files
+ 
+ Terraform plan command will run the main.tf first and then if there are any var in that wil search for variables.tf
+ 
+Terraform plan >> output will display the things what all are the things going to be created in green colour
+
+
+
+Main command in terraform is 
+>>terraform apply
+
+This will apply the changes we seen in the output of terraform plan
+ Note: terrafom apply command will create a files called "state file" which contains all the infermation aboiut the infra we created through the terraform
+ if this file was corrupted terraform will loss the data 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+terraform plan Output: displays the below parmaeters
+1> add (number of items) 2> change 3> Destroy
+
+
+Terraform apply command will ask or approvals while executing the command to bypass it use the below command
+
+>> terraform apply -auto--approve
+
+will display complete output on the screen
+
+After terraform appky command terraform will search for the state file and look into it for configurations
+if it find any existing objects or resources then it skip to recreat or duplicate it
+if there is no diff in the state file it will show that infra is up to date
+if the state file is corrupted then terraform will recreate the resource again which will cause the duplications
+
+
+**********state file name = terraform.tfstate
+
+
+
+Terraform tf vars and work space:
+--------------------------------
+
+***Proiding variables in variables.tf is not used in real time bcz every time we need to change the variables..tf file
+>> alternative for this is using the tfvars
+
+In tfvars we can use the different files for every enf like prod.tfvars and test.tfvars like this with out altering the variables.tf every time
+
+Work floe with tfvars
+
+Main.tf -------- variables.tf ------------- prod.tfvars/test.tfvars
+
+tfvars file format is "key=value"
+
+**Note**: variable names in the variable.tf must match with the variables in tfvars file
+command to excute the terraform with the tfvars file
+
+terraform plan --var-file test.tfvars
+terraform apply --var-file test.tfvars
+
+Out::
+-----
+
+This parameter will save the plan output
+terraform plan --var-file prod.tfvars -out prodplan
+
+the above comand will stoer the plan in prodplan  and we can excute this by the command
+terraform apply "prodplan"
+
+Usage: if any changes were done planning this those were delete while applying this plan and recreated the infa as per the plan
+
+
+
+ 
