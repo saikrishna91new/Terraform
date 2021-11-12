@@ -194,6 +194,14 @@ it will run the state file in the work space it has mentioned
 
 
 
+work spases are not used in real time bcz if we edit the main.tf fille then it will applicable to all the workspaces
+so better to go for superate folders to save the test file that can be arceve as remote location in terraform
+
+
+
+
+
+
 
 
 
