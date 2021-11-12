@@ -135,6 +135,71 @@ terraform apply "prodplan"
 
 Usage: if any changes were done planning this those were delete while applying this plan and recreated the infa as per the plan
 
+***Important Note:
+
+After running prod plan incase we need to run the same infra in test with different test.tfvars then terraform check that in terraform  state file and delete the old ones which 
+are in prd bcz the things are different in state file naming conention so it will delete the old ones
+
+It will do PROD to test for all the object
+
+How to overcome this ???
+
+Solution1: Make a copy of terraform stat file and run the plan for terraform test plan
+
+Solution2: Work Space
+
+
+How to detroy by taking input from a specific tfvars file??
+>>>>>>>>>>>>>>>>>>>>>>>>>>>terraform destroy --var-file prod.tfvars
+
+
+
+Work Space:
+-----------
+
+to list the work spaces 
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>terrafrom workspace list
+
+by deafault we will be in deafault workspace shown as *
+
+
+how to create a work space
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>terraform workspace new prod
+
+how to switch to the new workspace
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>terraform workspace select prod
+
+By default after creating the workspace you will be in the same work space
+
+So for test and prod we can create 2 work spaces superatly to main the same configuration in both the env
+
+step1> Create2worskspaces prod and test
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>terraform workspace new prod
+
+
+step2> switch to speific work space and apply the changes with prodtfvars
+>>>>>>>>>>>>>>>>>>terraform apply -var-fileprod.tfvars
+
+
+step3> Ceck the state file in terroform folder structure
+tis time we will see a directory instead of a file as >>terraform.tfstate.d inside that directory we could see the directories with the names of workspaces 
+ans contain state files in it
+
+
+
+how to run the terraform state file and display the output??
+>>>>>>>>>>>>>>terraform show
+it will run the state file in the work space it has mentioned
+
+
+
+
+
+
+
+
+
 
 
  
