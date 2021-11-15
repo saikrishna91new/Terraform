@@ -8,8 +8,9 @@ terraform version
 
 Important iles in terraform:
 ----------------------------
-1> Main.tf  2> Variables.tf   3>Output.tf
+1> Main.tf  2> Variables.tf   3>Output.tf   4>prod.tfvars
 
+don't support for ibm and bare metal
 
 Main.tf is the main file in terraform it has few sections like 
 
@@ -94,7 +95,7 @@ Terraform apply command will ask or approvals while executing the command to byp
 
 will display complete output on the screen
 
-After terraform appky command terraform will search for the state file and look into it for configurations
+After terraform apply command terraform will search for the state file and look into it for configurations
 if it find any existing objects or resources then it skip to recreat or duplicate it
 if there is no diff in the state file it will show that infra is up to date
 if the state file is corrupted then terraform will recreate the resource again which will cause the duplications
