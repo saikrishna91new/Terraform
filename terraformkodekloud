@@ -53,6 +53,19 @@ HCL files to update the configuraton files with tf extention
 Resource : object terraform manages it could be afile,machine, data base, users... etc
 
 
+Terraformplanout put:
++ to create new
+- to destroy the resources
+-/+ : recreteing the file
+
+Terraform is immutable:eg if we crete a local file and after that we need to chagent h permiison again then tf willl delete that and recreate the new
+
+How to update and destroy the resource??
+
+terraform apply >> to make or update the changes
+terraform destroy >> to remove all the things from terraform
+
+
 
 
 
