@@ -1,0 +1,55 @@
+HCL : hasicorp configuration language
+
+consists of block and arguments
+block in {}
+inside black key value pairs to represent configuration data
+
+<block> <parameter> {
+  key = value
+  }
+  
+what is the block:
+infermation about platform and set of resource with in tht platform we want to reate
+
+
+resource "local_file" "pet" {
+      filename = "/root/../pets.txt"
+      content = "some text...,"
+}
+
+resource = block name
+local_file = resource type (local = provider, file = Resource type)
+pet = Reource Name
+file name andcontent are the arguments 
+ 
+Each rousrce type has specific arguments they expect that we can not change
+
+above : file name and cntent are expecteed by local file we can not change
+
+eg for aws rsource
+
+
+resource "aws_instance" "test" {
+  ami = "ami..."
+  intance_type = "t2.micro"
+ }
+ 
+ 
+ 
+ resource "aws_s3_bucket" "test" {
+  bucket = "webserver-bucket"
+  acl = "private"
+ }
+ 
+ 
+ 
+ 
+ work floe : 4 steps
+ 
+ 1> terrafomr init to get the plugins ready
+ 2> write the configuration files
+ 3> reiew by terraform plan
+ 4>apply changes with terraform apply
+ 
+ 
+ 
