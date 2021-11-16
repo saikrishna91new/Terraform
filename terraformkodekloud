@@ -353,5 +353,31 @@ iac-server $
 
 
 
+Providers:
+---------------------------------------------------
+Providers used to support third party platforms with the helpof plugins
+aws,azure, gcp
+plugin based architechure 
+plugins are publicly available at terraform registry called
+registry.terraform.io
+
+3 tiers of providers:
+--------------------
+1> Official: aws, gcp, local.. etc
+2> Verified: bigip(f5), heroku, digitl ocean 
+  third party technologies partnerd with hashicorp
+3> Community provider: developed and mainained by hashi corp community (AD,ucloud,netapp-gcp)
+
+
+terraform init wildispaly te plugin version 
+we can run n time this command not effect the code
+
+plugins stored in .terraform/plugins contain configuration files
+
+while terrafomr init output
+
+* registry.terraform.io/hashicorp/local     hostname/organizatinal name space/typ of provider
+
+  
 
 
