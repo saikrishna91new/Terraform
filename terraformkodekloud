@@ -1,0 +1,61 @@
+Programing to automae the infra now a days
+we can do with the sell script as well but its very complex and can't reusable
+large shell script converted in terraform simple and readable 
+
+Types of iac tools
+-----------------
+1>Configuration management(ansible, puppet, chef, saltsstack)
+2>Server template (docker, packer, vegrant)
+3>Provisoning tools: (terraform, Cloud formation)
+
+Terraform: 
+deploy immutable infra resource
+servers, db, network ..etc
+Multiple providers for all major cloud
+
+Why is terrafomr?
+Free and open source by hashicorp
+single binary easy to install and use in minutes
+Multiple platform on both public and private (physical machine, vmware, aws, gcp, Azure) this can be arcive by providers
+providers help to manage third party tools with api
+
+uses hcl : hashicorp configuration language
+all fils ends with tf
+declaritive : infra is as per the code
+
+
+3 phases: init/plan/apply
+init: intialise the project and identofy and download the neccesary providers
+plan: draft a planto get to the target state
+apply: make changes to bring the desired state
+
+*if ay thing is missed will create only that object
+
+Resource:
+every object that terraform manages eg: db, ec2, db, network on physical server as well
+manages life cycle provisining -- configuring -- decommisioning
+record the state of the infra  based on this it will react for applying new changes
+ensure that infra is in desired state , state file is the blue print
+
+**Terraform can read the attributes of the existin infrastructure by using the data sources****
+**can import other reources created manually or by other tools into that control and mange them going forward
+
+
+
+Installing Terraform:
+------------------
+can download from terraform.io
+mv terrafrom /usr/local/bin
+>>>>>>>>>>terraform version
+
+HCL files to update the configuraton files with tf extention
+
+Resource : object terraform manages it could be afile,machine, data base, users... etc
+
+
+
+
+
+
+
+
