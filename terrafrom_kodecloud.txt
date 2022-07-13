@@ -1,0 +1,1137 @@
+Provisoning with out terraform: 
+1> Slow Deployment 
+2> Expensive
+3> Limite Automation
+4> Huma Error
+5> Wasted resource
+6> Inconsistancy 
+
+
+Iac tool resolve thi, this can be archived with scripting languages also but reusability is difficult
+
+Types of automation tools 1> Configuration management 2> Server template 3> provisioning toolss
+
+1> Configuration management : Ansible, puppet, chef : Install and manage softare, maitain standers structure, version control and idemptent
+
+2> Server template: Docker, packer, vagrant : preinstall software and dependanciesm vm or docker images, Immutable infrastructure
+
+3> Provisoning tools: Terraform : Deploy immutable infrastucture , support multiple providers through plugins
+
+
+
+Terrafrom: 
+supports multiple providers major, uses HCL 
+configuration files ends with .tf and maintain version control system
+
+Declerative: will bring the current state to desired state with out our interbention
+
+
+Terraform lifecycle:
+
+3 phases
+
+1>Init: intialise the project andd identofy the providers needed for target environment
+2>Plan: draft a plan to get the target state
+3>Apply: Make the changes on target env to bring the desired state
+
+** For some reason any configuration drift happens then the subsequent terrafom apply will revert that
+
+RESOURCE: every object manges by the terrraform, TF will manages the resource life cycle like create, update and destroy
+
+STATE FILE: Record the state of infra as it is in real world, based on this TF will take actions wily apply command, by this TF ensured desired state always
+
+INSTALLATION: Single binary and execution files
+
+Version: TF keep on updating version , Latest: V0.13.0
+
+TF uses HCL with .tf extenion. it contains blocks & parameters as key value pairs
+
+eg: 
+
+resourcce "aws_instance" "webserver" {
+		ami = "ami-id"
+		.....
+		}
+
+resource is the block name and aws_instance is the resource type here aws is provider and instance is resource and followed by logical name to save that 
+resource in the state file,, ARguments are places insde the {} brackets in this mandatory and optional args are available
+
+
+Terrafaform plan: will gives the blue print with all the arguments displayed in the configuration file and as well as some optional args
+
+Terraform Show: displays the resource created by the terrafrom and show the things in state file 
+
++ create new,, - : destroy,, -/+ destroy and create
+
+terrafrom destroy : will destroy the things recorded in state file and to destroy the specific resource "terraform destroy <resourcce-id>"
+
+
+Configuration directory: contain terraform configuration files with .tf extenion and no limit for the .tf file code can go unlimited and TF will support 
+multiple providers in same working directory and TF recoginse them by seeing the TF configuration files
+
+
+
+Input variables:
+----------------
+
+Instead of hardcoding the variables we can use dynamic variables for reussabilty which is main perpose of terraform 
+ variable block is used to decalre the variables
+
+EG: 
+	variable "variable_name" {
+			type= string
+			description = "give some descritpion if you want"
+			defaultr = "default value if not ddefined the variable any where"
+			}
+
+
+Above we have declareed the variable then how to call the variable in the configuration files var.<variable_name>
+
+
+EG:
+
+		variables.tf
+				
+				variable "ami" {
+					type = string
+					desccription = "ami used in the configuration"
+					}
+
+		main.tf
+			
+				resource "aws_instance" "webserver"	{
+					type = "t2.micro"
+					ami = var.ami
+					}
+
+
+Variable args: as showed aboed above we have some fixed and optional args in variable block like default, type, desccription... etc
+
+Various variable types:
+-----------------------
+
+Basic type: string, number, bool, any (default)
+Additional: list, map, object, tuple
+
+type string
+___________
+variable "string_var" {
+	type = string
+	default = "sai krishna"
+	}
+
+type number
+___________
+
+variable "number_var" {
+	type = number
+	default = 5
+	}
+
+type bool > which have only two values either true or falls
+__________
+
+variable "boolean_var" {
+	type = bool
+	default = true
+	}
+
+
+
+
+LIST: 
+----
+ Number collection of elements bcz each values is indexed and begins with zero
+
+
+variable "list_variable" {
+		type = list
+		default = ["sai", "krishna", "nitturu"]
+		}
+
+here
+var.list_variable[0] = sai
+var.list_variable[1] = krishna
+var.list_variable[2] = nitturu
+
+
+
+MAP:
+___
+
+Map is defined in key value pair and no limit for number of variables
+
+variable "map_variable" {
+		type = map
+		default = {
+			firstname = "Sai"
+			secondname = "krinshna"
+			lastname = "Nitturu"
+			}
+		}
+
+var.map_variable["firstname"] = sai
+var.map_variable["secondname"] = krishna
+var.map_variable["firstname"] = Nitturu
+
+List with type we can define what type of vaariables can go inside
+
+List with type string
+
+variabble "list_string" {
+	type = list(string)
+	default = ["sai","krishna"]
+	}
+
+List with type num
+
+variable "list_number"	{
+	type = list(number)
+	default = [1,3,4]
+	}
+
+If we pecify the list as tring and we mention the values as number terraform thows error as variable is not compatiable
+
+Same types applied to map as well
+
+variable "map_string" {
+	type = map(string)
+	default = {
+		one = "onee",
+		two = "two"
+	}
+	}
+
+variable "map_number" {
+	type = map(number)
+	default = {
+		one = 1,
+		two = 2
+		}
+	}
+
+SET:
+---
+set is similar to list but only differance is it doesn't accept the duplicate values, accessing use indexing start with 0 as list
+EG:
+	variable "set" {
+		type = set
+		default = ["one" , "two", "three"]
+		}
+	var.set[0] = one
+	var.set[1] = two
+		
+If we place any duplicates terraform will throws an error
+
+
+OBJECT:
+------
+Complex data structure with a combination of all variable types like list, string, num, bool , map ..etc
+
+variable "object" {
+	type = object( {
+		name = string
+		age = number
+		date = list(num)
+		job = bool
+		})
+	default = {
+		name = "sai"
+		age = 30
+		date = [7,7,2022]
+		job = true
+		}
+	}
+
+
+Tuple:
+_____
+
+Similr to list but accept the different types of vaariables like string, numberm bool 
+
+variable "tuple" {
+	type = tuple([string, number, bool ])
+	default = [ "cat", 7 ,true ]
+	}
+		
+variable type order declared in the type argument need to match with the variables in values if not error will occur
+
+
+Types of inputting the variables:
+--------------------------------
+
+1> Interactive mode: we just declared varibles and not defined any where then it will ask for the input at run time while terraform apply command
+   ----------------
+
+2> Command line: while terraform apply command we can pass the variable with the -var option
+   ------------
+		variable.tf
+		-----------
+		variable "name" {
+			typr = string
+			}
+
+		terraform apply -var "variable_name=variable_value"
+		terraform apply -var "name=sai"
+3> Environment variable: define the environment variables with the export option at OS level with the syntax "TF_VAR_<variable_number>="value"
+   --------------------
+			variable.tf
+		-----------
+		variable "name" {
+			typr = string
+			}
+		
+			EG:     export $TF_VAR_name = "sai"
+
+
+4> Variable defination files:  Files ending with terrafrom.tfvars or <any_name>.auto.tfvars (test.auto.tfvars) 
+   --------------------------
+		eg: terraform.tfvars
+				
+				name = "sai"
+				age = 8
+
+5> External file location: can pass .tfvars file from any other location by using -var-file option
+   ----------------------
+				terraform apply -var-file /usr/sai/terraform.tfvars
+
+Variable precedency
+-------------------
+
+At what options terraform will check the for the variable values from the above list 
+
+1> command line : terraform apply -var "name=sai"
+2> *.auto.tfvars
+3> terraform.tfvars.json
+4> terraform.tfvars
+5> Environment variable 
+6> varibles.tf       : here we can define variable with the argument default equals to
+
+
+
+RESOURCE ATTRIBUTES:
+-------------------
+In real how to link 2 resources, every resource has set of attributes will give output like id which is standerd to recognise in cloud,, this can be used 
+for other resource EG: vpc id needed for subnet to attach here subnet is depends on VPC,
+
+which resource gives with output attribute: refer in Terraform registry provider section 
+
+Syntax: ${resource_type.resource_name.attribute}
+
+These is called dependancy 2 types of dependancies 1> Implicit 2> Explicit
+
+1> Implicit dependancy: 
+
+It will refer the some other resource output attribute id with in the same configuration files 
+source resource : which has to create first and that output uses by other resource called destination resource ,, so source need to create first and after
+destination next terraform automatically recogise this while destroy also TF reverse the order deletes the destination first and then source
+
+syntax:      ${resource_type.resource_name.attribute}
+
+2> Explicit dependancy:
+
+specify the dependancy in the configurtion file with the depends_on argument and add in that which resource has to be complete first
+
+EG:		resourcce "aws_intnace" "webserver" {
+				ami = "ami_id"	
+				....
+				depends_on = [ 
+					aws_sg.sec_group
+						]
+					}
+		resource "aws_sg" "sec_group" {
+				name = "sg"
+				....
+				}
+
+Above example aws_inst is dependent on aws_sg so aws_sg need to create first then aws_instance
+USE CASE: when resource dependancy is there independantly and unable to call implicit dependancies 
+
+
+OUTPUT Variable:
+----------------
+To store an expression into a variable in Terraform, like every resource will give some output attributes we can see that in the terraform doccumentry 
+we can store this in some varibles with output blocks and can use them in other resources 
+
+Synatx: resource_type.resource_name.attribute_id :: here atttribute is the predefined for each resource
+
+EG:
+		resource "aws_s3" "my_bucket" {
+				name = "bucket"
+				region = "region"
+				}
+		output "bucket_id" {
+				value = aws_s3.my_bucket.id
+				}
+
+terraform ourput  > to display the output variables stored this is effect only after terraform apply 
+terraform output variable_name > to display the specific variable output eg from above code : terraform output bucket_id
+
+
+USE CASE: 
+1> Quickly display the details of the provisoned resource
+2> To input the other scripts and ansible
+3> To use for implicit dependancy 
+
+
+TERRAFROM STATE:
+
+which record all the things configred by the terraform, for terraform plan it refresh the in memorey or remote state file first and validate the
+configuration if it finds any things to create or destroy it will print the plan,,, terraform apply also do the same refresh before apply and also print 
+the same plan again
+
+State file has assigne unique resourse id for every object, it is a json data structure maps real world defination to resource def in configuration files
+it will create only after one successfull terraform apply 
+
+when ever any changes happen then terraform update the state file with new details and resource id
+
+What values are stored in the terraform: 	
+
+Terrafrom store all the resourcce details like attribute given in configration and as well optional attribute and assign a resource id also stores the 
+metadata usefule for destory and apply order while dependancy occurs
+
+
+PERFORMANCE: 
+-----------
+
+If staet file got refreshed every time for all terraform plan and apply but in real time it will take more time bcz of no of resource so we can skip this
+refresh state if we are sure no changes are happen out side terrafrom, use "terraform plan --refresh=false" same for apply as well so it wont refersh the 
+state file and take the existing stae file as single source of truth
+
+
+REMOTE STATE FILE:
+------------------
+
+While working as team multiple team members work on the terraform scripts and here terraform state file will store in the working directory that may 
+cause the data loss or corruption of state file so go for remote state file which will be same for all the worker despite of the place where they are 
+executing the code
+
+terraform state file store sensitive infermation like password and user id details in plain text so always store it in secure place and restrict the access
+as much as possible
+
+
+BEST PRACTISE:
+______________
+1> store the configuration files in any version control system to make that available for all the team members
+2> store the state file in any cloud storage like aws s3, terraform cloud..etc with security 
+
+
+
+TERRAFORM COMMANDS:
+___________________
+
+1> terrafrom validate: syntax check of configuration files if any error occurs displays the line number and hint to resolve that
+
+2> terraform format : format the terraform files in the configuration directory in canonical form and display the output as file names changed
+
+3> terrafrom show: displays the resources stored in the terrafom state file, to disple one resoure "terrafrom show resource_id"
+
+4> terrafrom list: list the resource ids in the stae file s
+
+5> terraform provider : to list the providers available in the present working directory
+
+6> terafrom providers mirror: to copy the modules from one directory to other directoy
+
+7> terrafrom refresh : refresh the state with the current infra this is auto done by plan and apply commands as well
+
+8> terrafrom graph: this is represnets the graphical representation of the dependancy in the configuration files & execution plan store in .graph can pass 
+				it to graphviz for more visualization
+
+
+Mutable VS Immutable:
+____________________
+
+Mutable: changable environment like applying the os patches 
+Immutable: non-changable eg for os update destory the old resource and create the new one here resource is assume as EC2
+
+
+Terraform is always immutable for every change it will destroy and recreate the new resourc, we can change this by lifecycle policy
+
+ 
+LIFECCLE RULES:
+--------------
+
+3 rules are there in lifecycle
+
+1> create_before_destory = true
+2> prevent_detroy = tru
+3> ignore_changes
+
+
+
+1> Create_before_destroy : By default applying any changes terraform will destroy the existing resource first and then create the new we can change this by 
+using this policy so terraform create the new resource first and detroy the existing one 
+
+eg: 
+		resource "aws_instance" "webserver" {
+				ami = "xxxxxxxxxxxx"
+				name = "nnnnn"
+				lifecycle {
+				create_before_destroy = true
+					}
+			}
+
+
+2> prevent_destroy = true : this feature won't destroy the resource at all if we try error come as disble the policy
+
+eg:
+		resource "aws_instance" "webserver" {
+			ami = "xxxxxxxxxx"
+			name = "nameee"
+			lifecycle {
+				prevent_detroy = true
+				}
+			}
+
+3> Ignore_changes: If any thing changes out side the terraorm after terraform apply then for subsequest apply command will revert that to avoide this 
+feature use this rule
+
+eg :	
+			resource "aws_instance" "webserver" {
+				ami = "aaaa"
+				name = "nnn"
+				lifecycle {
+					ignore_changes = [
+						tags,resourcese
+					]
+				}
+
+			above code excludes the specific attribute changes like tags and ami if we want to ignore all the changes write the code as
+				
+				lifecycle {
+				ignore_changes =all
+					}
+
+
+
+
+DATA SOURCE: 
+____________
+
+In terrrafrom we can read any resource attributes created outside the terrafrom by using the data source block, Terrafrom has provided these data source 
+for specific resources and also provides whihc attributes we can read
+
+synctax : data "resource_type" "resource_name" {	
+				attribute = "attribute to find"
+				}
+we can use this with the expression : data.resource_type.reource_name.attribute
+
+
+eg: update the new code here
+
+
+META ARGUMETS:
+--------------
+
+Will comes inside resource block and changes the functionality of the resurce we already covered the lifecycle and depends_on earlier other are count and 
+for_each
+
+Count:
+------
+For creating the multiple resources with the same confiration with in a same resource block give the variable count greate than one, like a loop it will
+execute the resource block as many times it is given by count and refer it as count.index
+
+eg: 			variable "name" {
+				type = list(string)
+				default = [ "first" , "second" , "third" ]
+				}
+			resource "aws_intance" "webserver" {
+				ami = "ami-id"
+				name = var.name[count.index]
+				count = 3
+				#if we are not sure with the lenght of variable use "count = lenght(variable.name) will give the lenght as a value to count
+				}
+
+above code will execute 3 times and create 3 instances and the logical name or resource id's are stored as index values start with zero in state file
+like webserver[0],webserver[1],webserver[2] 
+
+Negitive for this is if we want to destory any one resource among these 3 terraform will destory all 3 and recreate reming two why becaus the index id miss
+match if we remove any one then indes id are only 2 like 0 and 1 so previous index 1 to index 0 now which not satisfy terrafrom and recreate entire 
+resource again as per it policy
+
+
+this can be overcome by for_each attribute
+
+for_each: 
+--------
+>only work for either set or map type of variables only , it store the resource ids with the variable value so no miss match happend and dont delete the
+neede ones while recreating 
+
+eg:			variable "name" {
+				type = set(string)
+				default = [ "first" , "second" , "third" ]
+				}
+			resource "aws_intance" "webserver" {
+				ami = "ami-id"
+				for_each = var.filename
+				# here variable type is not either set or map then call as  "for_each=toset(var.name)" 
+				name = each.value
+				}
+
+
+Version constraints:
+-------------------
+
+Terraform init always prefer to download the latest version if we have any dependancies with the speicific version mention that in configuration file with 
+in the terraform block 
+
+eg:
+		terrfrom {
+			required_version {
+				local = {
+					source = "hashicorp/aws"
+					version = "1.4.0"
+					}
+				}
+			}
+
+above ode will download the version 1.4.0 exactly and there are sever ways in defining the version 
+		>> version = "!=2.0.0"  not download the specific version
+		>> version = "<1.4.0"  download any available version less than 1.4.0
+		>> version = ">1.4.0"  download any available version greater than 1.4.0
+		>> version = ">1.2.0,<1.8.0, !=1.2.0"  download any available version greate than 1.2.0 and less than 1.8.0 and not equals to 1.2.0
+		>> version = "~>1.2"  either same 1.2 version or incremental upto 1.9
+		>> version = ~>1.2.0" either same 1.2.0 version or incemental upto 1.2.9 here only last decimal is increments and go to max 9
+
+
+
+Remote state and state lock:
+___________________________
+
+
+State file lock ensures that no concurrent apply or plan happens at same time so its lock the statefile while executing the terraform called "state locking"
+
+In real time if we put the code in bit bucket or any other version controlling systems state locking can't archive as the users pull the code to their local
+and execute it so new state file is created and same time other team member can pull the source code and apply so those two state files mismatch while they
+reupload to bitbucket meanwhile if another team haven't pull the updated data it leads to corrupt or data loss ,, how to overcome?? Remote state
+
+Remote state:
+-------------
+Store the state file in remotley like anu cloud and open db table for locking so who ever is working will point to same state file and have same locking 
+through dynamo db table also encrypt the state file is the best practice in real time for security compliance
+
+we can define this in terrafrom block with remote backend
+prerequisites: as per aws
+1> s3 bucket to store state file
+2> dynamo db table for state locking
+
+eg:				terraform {
+					backend "s3" {
+						bucket = "_______"
+						key = "___________"
+						region = "____________"
+						dynamodb_table = "_____________"
+						}
+
+**note: best practise store this remote configuration code part superratly in provider.tf instead of main.tf
+
+While  configuring the remote state first time it will require terrafrom init to copy the local state file to remote once it complete we may delete the 
+local stae file 
+
+
+
+STATE COMMANDS:
+______________
+Its difficult to edit the stae file manually but we can have some command which manipulate the state file 
+
+1> terrafrom state list > print all resource ids in state file
+2> terraform state list <respurce-id> : list the specific respource id 
+3> terrafrom move <resource_id> <source> <destination>: can move the resource from one location to other or with in the same file called renaming a resource
+4> terrafrom state pull : to pull a remote sate file to local 
+5> terrafrom steate rm <resource_address> :: remove the specific resource from state file not from configuration and real infra
+
+
+
+
+Provisoners:
+____________
+
+Running commands remotley  or locally
+2 types 1> remote_exec (run on target resource) 2>local_exec (run on local where terraform installed)
+
+provisoner block come inside resource blocak
+
+eg: 					resource "aws_instance" "webserver" {
+						ami= "_"
+						instance_type = "t2.micro"
+						provisoner "remote_exec" {
+							inline = ["yum update",
+								    "yum install httpd"	
+								   ]
+							}
+						connection	{
+							type = "ssh"
+							host = self.public
+							user = "ubuntu"
+							private_key = file("/tmp/privatekey.pem")
+							}
+						}
+
+In the above example we mentioned connection block as well with remote_exec whihc is mandatory to check the connectivity for remote_exec that is pur
+responsibility for best practise user boot sstrap script instead of remote_exec
+
+
+local_exec for execute commands locally this is work in some cases where we have to dump the resourcing provising we are into one file in local
+
+eg:					resource "aws_instance" "weberver"	{
+						ami = "........."
+						...
+						provisoner "local_exec" {
+						commad = "echo ${aws_instance.webserver.ip} > /tmp/iplist
+						}
+						}				
+
+
+Provisoner by default create after resorce creation is called "Create time provisoner"
+Destroy time provisoner will run before destroying a resource by placing a string "when = destroy" inside provisoner block if there is any failure inside
+the provisoner block terrafrom mark that as taint and will recreate on the subsequent apply we can overcome this by "on_failure = continue"
+
+on_failure has 2 options "fail" and "continue" by default on_failure is fail and taint the resource for next apply
+
+provisoner behaviour
+1> Creation time provisoner"  2> Destroy time provisoner 3> on_failure is fail or continue
+
+
+
+
+Terrafrom Taint and untaint:
+---------------------------
+
+If any resource failed to create the terrrafrom mark it as taint and create for the next apply that will show in the terraform plan command as 
+terrafrom tainted the perticuler resource and do create for next time
+
+we can manually taint and untaint thee resource with commands
+
+terrafrom taint aws_instance.webbserver   (syntax: terrafrom taint resourcetype.resoircename)
+
+use cases: 1> when we want to make any resource recareate while any changes happen outside of terrafrom in that case taint the resource that will 
+recreate fir next apply
+
+
+UNTAINT:
+-------
+terrafrom untaint aws_instance.webbserver   (syntax: terrafrom untaint resourcetype.resoircename)
+
+
+
+
+
+Logging:
+-------
+By default terrafrom wont display any logs so if we want to check the logs for debugging we have to export the variables at os level
+
+to write the logs export a variable TF_LOG with any option from the following (info,warning,error,debug,trace)
+EG: export TF_LOG = trace  >> trace has the highest priority 
+
+By this terrafrom display log out put while executing the terrafrom commands on the screen but it wont store them at nay location , to stoer the log at any
+location we have to export one more variabble TF_LOG_PATH with the file path
+EG: export TF_LOG_PATH = /tmp/debug.log
+
+to clear the variables exported prior is  :: unset <variable name>    eg: unset TF_LOG
+
+
+
+Terrafrom import: 
+----------------
+
+There may be chances that any resource can create outside the terrafrom with other configuration tools or manually in that case we can import that resource 
+to terrafrom to bring that into terrafrom control to perform the operations , steps to do import a resource
+
+step1: add a empty resource block in the configuration file    
+		resource "aws_instance" "webserver" {}
+		#here webserver is the logical name for state file can be user control we can give any name and use same name in import command
+
+step2: import coomand
+		terrafrom import aws_instance.webserver <instnace_id>
+		# here we have to give the instnace_idd of that specific resource whihc will unique for that we can get it from console
+
+step3: After the import take the configuration attributes from the state file with terrafrom state show command add them appropriatly inside the empty block
+	 added in step1 , and check with terrfrom plan expected outptu is not to create any thing if configuration is properly added
+
+
+
+Modules:
+--------
+ In real time we have to create  multiple resources that may be some similar resource multiple time that cause duplication in code and repeteting copy work 
+causes errors in code 
+terrafrom can't put you any limit in the number of lines and blocks in terrafrom configuration files , we can split them into peaces that also cause 
+duplicate work so we can use modules 
+
+By modules we can place entire code in any directory and use them from where ever we want 
+
+Module is the direcctory where we place the configuration files 
+required blocke is module block in main.tf and required argument is source whihch is path to code and we can pass any variables to code from here
+
+2 types of modules : 1> Root modules (where we are running thee code)  2> chaild module (where the code placed)
+
+EG :1> place the code in /root/aws_instnace  (main.tf, variables.tf) ---- chaild module
+	2> use the module from /tmp/aws_instacne likee blow
+		main.tf
+		-------
+			module "module_name" {
+				source = "/root/aws_instance"
+				}
+
+
+After writing the module we needed terrafrom init which will down load the provides as well as the chaild module configuration to present working directory
+
+resource name is referred as >>> module.module_name.reesource_type.resource_name >> in state file usually it is "reesource_type.resource_name"
+
+Advantages:
+
+1> Simple configuration avoide duplicates
+2> Test and validated code will be used as modules so no errors occur
+3> Reusability we can use the same module for n number of times
+
+
+Registry modules:
+-----------------
+
+instead of writing code and using it in loca terrafrom registry it self we can get modules from the providers directly like aws, gcp ,, etc,, we can get the details of that module like published by 
+whome, when and versions, dependant modules, source code path and sample code referance to use the module, reuired and optional input and output variables 
+for that module
+
+EG: main.tf 
+
+		module "registory_module_any_name" {
+			source = "path mentioned in the terrafrom"		
+			.......required arguments......
+			}
+
+
+
+Terrafrom functions:
+-------------------
+
+1> file  : to read a file       display_data = file("/tmp/output.txt")
+
+2> lenght : gives lenth of a variable     
+
+
+ variable "rules" {
+		type = list
+		default = [ "sai", "krishna" , "name" ]
+		}	
+ lengt=length(var.rules)				# gives output as 3 
+
+
+						
+3> toset: convert the variable type from one type to another 
+
+	
+variable "rules" {
+		type = list
+		default = [ "sai", "krishna" , "name" ]
+		}	
+ lengt=toset(var.rules)
+
+
+4> Terrafrom console: where we can run and test the functins with the variables available values in state file and configuration files before using the 
+functions in main code 
+	terrafro console 
+
+types of functions: 
+------------------
+
+1> numeric 2> string 3> collection 4> type
+
+
+1> Numeric: work on expression like min,max,ceil,floor
+	max(-1,4,7,11) = results 11
+	min(-1,4,7,11) = results -1
+	ceil(10.1) = results the whole number rqulas to greater than taht = resutls 11
+	floor(10.1) = results the whole number rqulas to lesser than taht = resutls 10
+
+2> String: split, upper, lower, substr, tittle, join
+
+	eg:
+		variable "string_var" {
+				type = string
+				default = "ami-abc,ami-cde,ami-fgh"
+				}
+	split: will split the string with a specific parameter and move them to a list
+	we can call it 2 ways directly provide the string in variable like >> split (",","ami-abc,ami-cde,ami-fgh")  >> ["ami-abc", "ami-def","ami-ghi"]
+												 >> split (",",var.string_var)  >> ["ami-abc", "ami-def","ami-ghi"]
+
+
+	lower - convert all letters into lower case    lower(var.string_var)
+	upper - convert all letters into upper case
+	title - convert only first letter into upper tittle("sai") - Sai
+      substr: to extract the small peice of a string 
+		variable "string_var" {
+				type = string
+				default = "saikrishn"
+				}
+		substr(var.string_var,0,2)    - sai 				# starting letter index is 0
+	      substr(var.string_var,3,8)	- krishna
+	join: join a set of string with a speicifc charecter opposite to split
+		
+				variable "string_var" {
+				type = list(string)
+				default = ["sai","krishna","nitturu"]
+				}
+	
+		join(",",var.string_var) = sai,krishna,nitturu
+		join(".",var.string_var) = sai.krishna.nitturu
+
+3> Collection functions: index, elements, contains
+		
+	index: retursn the index number of a list 
+	element: return the values of a list with give index number 
+	contains: check wether the element is there ir not in the list and returns true or falls
+
+			variable "string_var" {
+				type = list(string)
+				default = ["sai","krishna","nitturu"]
+				}
+
+			index (var.string_var, "sai") - 0
+			index (var.string_var, "krishna") - 1
+			element (var.string_var, 0) - sai
+			element (var.string_var, 2) - nitturu
+			contains (var.string_var, "sai") - true
+			contains (var.string_var, "test") - false
+
+4> Map Specific: keys , values, lookup
+			keys - will return the keys of the strings into list
+			values - will return the values into list
+			lookup - will check the specific value with specific key if not find return default value
+		
+			variable "map_var" {
+				type = map
+				default = {
+					"first_name" = "sai"
+					"second_name" = "krishna"
+					"surname" = "nitturu"	
+					}
+					}
+				keys (var.map_var) = ["first_name" , "second_name" , "surname" ]
+				values (var.map_var) = ["sai", "krishna" , "nitturu"]
+				lookup - syntax (variable_name, key, default_value)
+				lookup (var.map_var,surname) = nitturu
+				lookup (var.map_var,test,noname) = noname
+
+5> conditional operations
+		1> arthematic : +,-,*,% ..etc    : 1+1 = 2 
+		2> comparison operator (gives true or falls) : <,>,<=,>=,!=,== 
+		3> logical and && , logical or ||   - check the truth table in google
+		4> If case:			condition? <value if true> : <value if false>			
+			
+			length = var.length < 8 ? 8 : var.length
+				if true it will take 8
+				if valse it will take var.lenght as input
+
+
+
+Workspace: creating different projects in same work directory and use for different projects
+even though it is remote state file there will be one to one relation with state and config directory so code can't duplicate for similar resourcce for diff
+projects resove this work space maintain superate state files for each work space that is the idea
+
+default work space is default cant be deleted
+
+create a work space >>>>>>>>> terraform workspace project-b <<<< this is the command and after creating it will point to the latest one
+list the work space : terrafrom workspace list  : * will be there at the present work space
+select the work space: terrafrom workspace selet <name> to go for the workspace
+
+
+if work spaces are there then state files listed at terrafrom.tfstate.d directory and inside that dir name with workspace name and then store state files
+
+
+
+
+
+
+
+
+
+Additional points:
+------------------
+
+terrafrom apply  -- command will ask user input every time for this action to avoide this provide -auto-approve to apply automatically
+>>>>>>>>>>>>>  terrafrom apply -auto-approve
+
+
+to check the default and optional arguments required for the specific resource check in the terrafrom doccumentry 
+
+
+While terrafrom going to recreate anything it will displey that in the plan aas -/+ symbol and also what causes this to recreate "~" symbol
+
+terrafrom destroy also need user input use auto-approve too override it
+
+
+resource attibutes defautl geneated while creating can refer in other places
+
+
+
+variable default value can be overwrite any time
+-var has the highest priority
+
+
+empty variable block alos valid one as there is no default we are giving
+
+senstive arg in variable block accept true or false either if its true then terrfarom plan and apply commands will supress that data in blue print but state
+file wills store it as it is with out seeing this sensitive arg
+
+Validation: in variable block validates the input value for the variable we can ise terrfarom inbuilt values like substr, split ..etc if its not valid 
+terrafrom throws an error 
+
+Type conversion: if specify the variable type as string and we have defined as number then terrafrom will automatically convert that into string this called
+type conversion only available for string to number and string to boolean only,, if type conversion is not available for specific type it throws an error
+
+
+in map variable we can mention as many as default variables
+
+Output variable: uised to store an expression value in terrafrom, can have description as well and will display for every teeraform apply
+
+
+Dependancy: 
+Once resource got created terrafrom will generate some default attributes which can use as the input to other resource as implicit dependacny , these are 
+mentioned in the terrafrom doccumentroy , TF will follow the order in this scenarios
+
+
+Resource targetting: to appy the changes on specific resource instead of entiore configuration is done by target same for destroy as well
+terrafrom apply/destroy -target resource_type.resource_name
+
+
+
+Data block need to provide some key name arguments as mentioned in terrafrom doccumentss to identoy uniqely can use multiple keys and in filer key we can 
+filter by using the tags here
+
+
+
+state:
+
+TF default create bkp for the state file its a json structure
+
+detailed info about all attributes including required and optional
+
+-refresh=false stop TF to refersh the state while plan and apply but writes after apply
+
+usefull for large env which takes time 
+
+stores metadata as well like dependancies to folow order of allow or deny
+
+Remote state:
+
+-----------
+
+for first time with remote state ask for copy provide input as yes
+next time while apply state taken from remote and put the dynamodb to lockk state and release after apply
+
+terrafrom stae pull - to pull from remote to local
+
+any changes to state file update it to configuration files to avoid recreating for next apply
+
+
+terrafrom push command to push the loca stae file to over write the remote state file if completly differance between local and remote state file then tf 
+throws an error like so much differance and ask force command to overwrite forcefully 
+
+
+taint: if any resourcce got failed to create while apply command then terrfarom make as taintined and recrete that foe next apply we can see this in 
+terrafrom plan that the resource got tainted and about to recreate
+
+terrafrom apply -replace="resource-name" is preffered thant terrafrom taint
+
+use full when we force a resource to create when manual changes happend to avoide the destory to avoide much steps so do a taint like this
+terrafrom taint resource_type.resource_name
+
+can do untaint with terrafrom untaint resource_type.resource_name 
+
+
+LOG levels: info, warning, error , debug, trace
+
+variables TF_LOG, TF_LOG_PATH, unset to remove 
+
+import: resource id is required and not update the config file only state file it updates add emty block with proer resource_type before import
+
+terraform import  resource_type.resource_name attribute
+
+locals:
+------
+
+If any reusability code like tags in aconfiguration file then we can define in a locals block in config file and use with the tag local.name
+
+eg::mian.tf
+		
+		locals {
+			tags = 	{
+				name = "sai"
+				sur-name = "krishna"
+				}
+			}
+
+we can call this as local.tags
+
+dynamic bocks: reduce the use of same block repetedly like ingress rules in SG of aws
+syntax: dynamic "ingress" { 
+		for_each = var.rules
+		content {
+		#common code here
+		from_port = ingress.value
+		to_port = ingress.value
+		protocal = "tcp"
+		cidr_blocks = ["0.0.0.0/0"]
+		}
+	}
+
+
+variable "rules" {
+		type = set
+		default = ["22", "8080"]
+		}
+
+also iterator as well instead of dynamic variable name as mentioned below 
+
+
+dynamic "ingress" { 
+		iterator = port
+		for_each = var.rules
+		content {
+		#common code here
+		from_port = port.value
+		to_port = port.value
+		protocal = "tcp"
+		cidr_blocks = ["0.0.0.0/0"]
+		}
+
+
+splat is nothing but using * in output variables to reflect all similar type of variable
+
+output "ports" {
+	value = aws_seucrity_group.backend-sg.ingress[*].to-port
+	}
+
+
+
+alias, for using the same provider with different configurations for different resources
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Additional provider configuration for west coast region; resources can
+# reference this as `aws.west`.
+provider "aws" {
+  alias  = "west"
+  region = "us-west-2"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+					
+
+		
+			
+
+
+
+
