@@ -1,0 +1,29 @@
+locals {
+    required_data = jsondecode(file("${path.module}/requirements.json"))
+
+    # split to get the code after the exact resource
+    user_data = split("azurerm_databricks_workspace",file("${path.module}/adb.tf_bkp"))
+    # user data variable has 2 parts 0 is elimntaed and 1 has the required value with other extended code
+    # split the code with resource in 1 list element and again 2 elemnts created we have required data in 0 of user_data2
+    user_data2 = split("resource \"", local.user_data[1])
+    #spliting the taken code into line by line as superate strings
+    user_data3 = split("\n", local.user_data2[0])
+#     search_str = [ for list2 in local.user_data3 : split("=",list2)[1] if can(regex("public_network_access_enabled", list2))]
+      search_str = [ for required_value in local.required_data.values :  [
+                        for list2 in local.user_data3 :
+                                { "parameter_name" = required_value.parameter
+                                  "value" = required_value.value
+                                  "compilance" = "yes"
+                                  "description" = required_value.description }if can(regex(required_value.value, list2)) && can(regex(required_value.parameter, list2)) ]]
+      listofsearch = tolist(local.search_str)
+}
+
+output "written" {
+#    value = local.user_data3
+#       value = length(local.search_str)
+value = local.search_str
+}
+
+output "required" {
+    value = local.listofsearch
+}
