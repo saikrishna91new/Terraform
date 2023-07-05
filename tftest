@@ -27,3 +27,21 @@ value = local.search_str
 output "required" {
     value = local.listofsearch
 }
+
+
+
+
+##############################3
+
+
+to read all the variables used inside main.tf
+ uservardata =  [ for i in local.userdata_lbl : split(".",trimspace(split("=", i)[1]))[1]  if can(regex("var.", i)) && !can(regex("variable", i)) ]
+
+
+to get the values from teast file
+
+ getvarvalue = [ for i in local.uservardata:
+                        [ for j in local.root_module_file_spliteted_data: { trimspace(i) = replace(trimspace(split("=",j)[1]),"\"","") } if can(regex(i, j)) ]]
+
+
+
