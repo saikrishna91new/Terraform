@@ -24,6 +24,8 @@ merge_op = merge(local.zpmp, local.plan_out4)
 
 test_fine = { for k,v in local.merge_op: (k) => { "name" = k
                                                     "given_value" = v
-                                                    "compilance" = can(regex(v, "Standard_LRS"))?"true":"false" } }
+                                                    "compilance" = can(regex(v, "null"))?"true":"false"
+                                                    "cmpl2" = v != null ? can(regex(v, "premium"))?"true":"false" : "krishna"           } }
+
 
 
