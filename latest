@@ -22,3 +22,8 @@ plan_out4 = { for k,v  in local.data: k => v if !can(regex(k, local.string_to_se
 #merging both the list
 merge_op = merge(local.zpmp, local.plan_out4)
 
+test_fine = { for k,v in local.merge_op: (k) => { "name" = k
+                                                    "given_value" = v
+                                                    "compilance" = can(regex(v, "Standard_LRS"))?"true":"false" } }
+
+
