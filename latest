@@ -1,0 +1,24 @@
+
+data = var.getvalue
+ string1 = ["custom_parameters",]
+
+
+   string_to_search = <<EOT
+        %{ for i in local.string1 }
+        "${i}"
+%{ endfor }
+EOT
+#read all nested keys into list
+ plan_out3kk =  tolist(concat([for i in local.string1: keys(lookup(local.data, "${i}", "test")[0])]...))
+# read all nested values into list
+ plan_out3kv =  tolist(concat([for i in local.string1: values(lookup(local.data, "${i}", "test")[0])]...))
+#creating a map from it
+ zpmp = zipmap(local.plan_out3kk, local.plan_out3kv)
+
+#creating a map with non nested list
+
+plan_out4 = { for k,v  in local.data: k => v if !can(regex(k, local.string_to_search))}
+
+#merging both the list
+merge_op = merge(local.zpmp, local.plan_out4)
+
