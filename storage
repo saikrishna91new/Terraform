@@ -1,0 +1,92 @@
+root@terraformserver:~/tfe_storage# cat modules/testm/testfile.tf
+variable "any" {
+        type = any
+        }
+
+locals {
+data = var.any
+f1 = jsondecode(file("${path.module}/requirements.json"))
+#parm = [for i in local.f1.values: local.data["${split(".",i.parameter)[0]}"][0]["${split(".",i.parameter)[1]}"][0]["${split(".",i.parameter)[2]}"]
+#if length(split(".",i.parameter)) == 3 ]
+
+
+
+
+/*parm = [for i in local.f1.values:  length(split(".",i.parameter)) == 3 ?
+local.data["${split(".",i.parameter)[0]}"][0]["${split(".",i.parameter)[1]}"][0]["${split(".",i.parameter)[2]}"]:
+        length(split(".",i.parameter)) == 1 ? local.data["${split(".",i.parameter)[0]}"]:"false"
+]*/
+
+parm3 = { for i in local.f1.values:  (i.parameter) => {
+                        gvalue = local.data["${split(".",i.parameter)[0]}"][0]["${split(".",i.parameter)[1]}"][0]["${split(".",i.parameter)[2]}"]
+                        rvalue = i.value
+} if length(split(".",i.parameter)) == 3
+}
+
+parm = { for i in local.f1.values:  (i.parameter) => {
+                        gvalue = local.data["${split(".",i.parameter)[0]}"]
+                        rvalue = i.value
+} if length(split(".",i.parameter)) == 1
+}
+
+
+parm2 = { for i in local.f1.values:  (i.parameter) => {
+                        gvalue = local.data["${split(".",i.parameter)[0]}"][0]["${split(".",i.parameter)[1]}"]
+                        rvalue = i.value
+} if length(split(".",i.parameter)) == 2
+}
+
+ouput = merge(local.parm3, local.parm, local.parm2)
+
+
+pot = { for i in local.f1.values:  (i.parameter) => { for j,k  in local.ouput : (j) =>  { value =  k }  if i.parameter == j}  }
+#parm3 = local.data["queue_encryption_key_type"]
+
+#result = [ for i in local.f1.values: [ for k , v in local.ouput : v.value ] if ]
+#result = [ for k , v in local.ouput :{ k =  v.value
+#                                       j = can(regex(v.value, "5")?"true":"false")     }
+result = [ for k , v  in local.ouput :  {
+                                gvalue = v.gvalue
+                                rvalue = v.rvalue
+                                cmp = can(regex(v.gvalue,v.rvalue))?"true":"failed"
+                                }]
+somevar = "test"
+sometest = [ for k , v  in local.ouput : can(regex(v.gvalue,v.rvalue))? { (k) = true} : { "hi.${k}" = false } ]
+sometest3_old = [ for k , v  in local.ouput :  can(regex(v.gvalue,v.rvalue))? {(k)  = true} : {(k) = false }]
+testmap = [ for i in local.f1.values: i.parameter ]
+tesmapnum = merge([ for i in range(0, length(local.f1.values)): {"true${i}" = "false${i}"} ]...)
+cmp_opt = [ for k , v  in local.ouput :  can(regex(v.gvalue,v.rvalue))? {(k)  = true} : {"${k}_false"  = false }]
+keys = [for i in local.cmp_opt: keys(i)[0] ]
+indx = [ for k , v  in local.ouput :  can(regex(v.gvalue,v.rvalue))? {} : {(k) = false }]
+
+
+
+
+
+
+sometest3 = [ for i in local.testmap : [ for k , v  in local.ouput :  !can(regex(v.gvalue,v.rvalue))? {(i)  = true} : {"(i)_i" = false }]]
+#sometest3_mp = { for i in local.testmap: { for k , v  in local.ouput : (k) => {
+sometest4 = [ for i in local.sometest3 : i  ]
+#result2 = [ for i in local.result : { "test" = can(regex(try(index(values(i), "failed"),"no"),0))?"sai":"krishna"}]
+#expected_results = [ for i in local.sometest2 : try(index(i, "hi.blob_properties.container_delete_retention_policy.days"), "nodata")]
+#expected_results = [ for i in local.sometest2 : i[0] ]
+
+result2 = [ for k,v in local.result :  can(v.cmp)  ]
+fr = fileexists("${path.module}/nofile.tf")
+string_to_search = <<EOT
+        %{ for i in local.result}
+        "${i.rvalue}"
+%{ endfor }
+EOT
+
+str = [ "a" , "a" , "b" , "a" ]
+
+
+
+#res = local.data["${local.str}"][0]["container_delete_retention_policy"][0]["days"]
+
+#res = element(local.data["blob_properties"], 0)
+#vpc = {for i in range(0, 3) : (i) => [for k, v in local.result:  v.cmp != "true" ? { (k)  = "test" } : { } ] }
+vpc = {for i in range(0, 3) : (i) => [for k, v in local.result:  v.cmp != "true" ? {for i in range(0,1): (k) =>{"test" = "no" } }: { } ] }
+
+}
