@@ -1,0 +1,53 @@
+variable "input" {
+        type = any
+}
+
+
+locals {
+        data = var.input
+      test=fileset(path.module, "*json")
+        mod_res = merge([ for m,r in var.input : { (m) : keys(r)[0] } if contains(local.test, "${keys(r)[0]}.json")]...)
+#       getvalues = concat([ for m,r in local.mod_res : merge([ for i in jsondecode(file("${path.module}/${r}.json")):{ (r) = i } ])]...)
+     getvalues = { for m,r in local.mod_res : (r) =>  jsondecode(file("${path.module}/${r}.json")).values }
+
+level3 = { for m,r in local.mod_res : (m) => { for i in range(0, length(local.getvalues[r])): (local.getvalues[r][i].parameter) => { param = local.getvalues[r][i].parameter
+                                                                                                operator = local.getvalues[r][i].operator
+                                                                                                value =  local.getvalues[r][i].value
+gvalue =local.data[m][r]["${split(".",local.getvalues[r][i].parameter)[0]}"][0]["${split(".",local.getvalues[r][i].parameter)[1]}"][0]["${split(".",local.getvalues[r][i].parameter)[2]}"] } if length(split(".",local.getvalues[r][i].parameter)) == 3 }}
+
+level2 = { for m,r in local.mod_res : (m) => { for i in range(0, length(local.getvalues[r])): (local.getvalues[r][i].parameter) => { param = local.getvalues[r][i].parameter
+                                                                                                operator = local.getvalues[r][i].operator
+                                                                                                value =  local.getvalues[r][i].value
+gvalue =local.data[m][r]["${split(".",local.getvalues[r][i].parameter)[0]}"][0]["${split(".",local.getvalues[r][i].parameter)[1]}"] } if length(split(".",local.getvalues[r][i].parameter)) == 2 }}
+
+
+level1 = { for m,r in local.mod_res : (m) => { for i in range(0, length(local.getvalues[r])): (local.getvalues[r][i].parameter) => { param = local.getvalues[r][i].parameter
+                                                                                                operator = local.getvalues[r][i].operator
+                                                                                                value =  local.getvalues[r][i].value
+gvalue =local.data[m][r]["${split(".",local.getvalues[r][i].parameter)[0]}"]} if length(split(".",local.getvalues[r][i].parameter)) == 1 }}
+
+
+output = { for m,r in local.mod_res : (m) => merge(local.level1[m], local.level2[m], local.level3[m]) }
+output_list_to_string = { for m,r in local.mod_res : (m) => {for k,v  in local.output[m] : (k) => { gvalue = try(join(",",v.gvalue), v.gvalue)
+                                                                                                    value = v.value
+                                                                                                    operator = v.operator
+                                                                                                    parameter = v.param} } }
+
+/*
+result = { for m,r in local.mod_res : "Module ${(m)}/ Resource ${(r)}" => [ for i in range(0, length(local.level3[m])): { cmp = can(local.level3[m][i].gvalue == local.level3[m][i].value)? true : false
+value = local.level3[m][i].value
+gvalue = local.level3[m][i].gvalue}]}
+*/
+cmp_result = { for m,r in local.mod_res : (m) => { for k,v in local.output[m]: (k) => { cmp = can(v.gvalue == v.value) ? true : false
+                                                                                        value_got = v.gvalue
+                                                                                        required_value = v.value}  } }
+#finalresult = { for m,r in local.mod_res : (m) => merge(local.cmp_result[m], local.output[m])}
+output2 = { for m,r in local.mod_res : (m) => { for k,v in local.output_list_to_string[m]: (k) => { cmp = v.gvalue > v.value ? true : false
+                                                                                        value_got = tonumber("${v.gvalue}")
+                                                                                        required_value = v.value}  if v.operator == "greaterthan"} }
+}
+
+output "resoult" {
+        value = local.output2
+        #value = local.data["dtbrwk"]["azurerm_databricks_workspace"]["${split(".",local.getvalues["azurerm_databricks_workspace"][0].parameter)[0]}"]
+}
